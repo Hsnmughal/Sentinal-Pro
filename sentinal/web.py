@@ -12,6 +12,7 @@ import sqlite3
 
 import socket
 import shutil
+import socketserver
 import tempfile
 import threading
 import time
@@ -163,7 +164,18 @@ class LocalHTTPServer(ThreadingHTTPServer):
 
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
 
-        super().server_bind()
+        # HTTPServer.server_bind resolves socket.getfqdn(host), a reverse DNS lookup
+        # that runs after listen(). On hosts with a slow or unreachable resolver it
+        # blocks for as long as the lookup takes, so the socket accepts nothing and
+        # loopback clients time out. This server is loopback-only, so the bound host
+        # is already the correct server name.
+        socketserver.TCPServer.server_bind(self)
+
+        host, port = self.server_address[:2]
+
+        self.server_name = host
+
+        self.server_port = port
 
 
 
