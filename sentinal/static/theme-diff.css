@@ -1,0 +1,157 @@
+/* Sentinal Pro — change/diff review element layer.
+   Owns: .observed-change, .file-diff, .diff-code patch blocks
+   Loads after dashboard.css (tokens + base). Consume tokens; do not redefine them. */
+
+/* Code-change accent (design.md): soft blue highlight for the diff context.
+   Defined once here; the light theme swaps in a contrast-safe variant. */
+.observed-change, .file-diff { --diff-accent: #a5d6ff; }
+[data-theme="light"] .observed-change,
+[data-theme="light"] .file-diff { --diff-accent: #0e639c; }
+
+/* ---- Disclosures ------------------------------------------------------ */
+
+.observed-change { padding: 3px 0 15px; border-bottom: 1px solid var(--line); }
+.observed-change:last-child { border-bottom: 0; padding-bottom: 3px; }
+
+.observed-change > summary,
+.file-diff > summary {
+  display: block;
+  list-style: none;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.55;
+  transition: color var(--dur-ui) var(--ease-out);
+}
+.observed-change > summary::-webkit-details-marker,
+.file-diff > summary::-webkit-details-marker { display: none; }
+
+/* Quiet chevron: right at rest, down when open, tinted with the diff accent. */
+.observed-change > summary::before,
+.file-diff > summary::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 9px;
+  vertical-align: 1px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform var(--dur-ui) var(--glide), border-color var(--dur-ui) var(--ease-out);
+}
+.observed-change > summary:hover,
+.file-diff > summary:hover { color: var(--text); }
+.observed-change > summary:hover::before,
+.file-diff > summary:hover::before { border-color: var(--text); }
+.observed-change[open] > summary,
+.file-diff[open] > summary { margin-bottom: 10px; }
+.observed-change[open] > summary::before,
+.file-diff[open] > summary::before { transform: rotate(45deg); border-color: var(--diff-accent); }
+
+/* Summary anatomy (changedFilesHtml): mono path, muted meta, tonal delta. */
+.fd-path { font-family: var(--font-mono); font-weight: 500; font-size: 12px; }
+.fd-meta { color: var(--muted); font-weight: 450; }
+.fd-adds, .fd-dels { font-variant-numeric: tabular-nums; }
+.fd-adds { color: var(--positive); }
+.fd-dels { color: var(--negative); }
+
+/* ---- Change body ------------------------------------------------------ */
+
+.observed-change > p,
+.file-diff > p { margin: 6px 0; font-size: 12px; line-height: 1.6; }
+
+.observed-change > .bad::before,
+.file-diff > .bad::before { content: "⚠ "; }
+
+/* Revision hashes are data, not accent chips. */
+.observed-change code,
+.file-diff code {
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* ---- File diff blocks -------------------------------------------------- */
+
+.file-diff {
+  margin: 12px 0 4px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+}
+.file-diff:last-child { margin-bottom: 2px; }
+.file-diff > summary { padding: 9px 12px; border-radius: calc(var(--radius-sm) - 1px) calc(var(--radius-sm) - 1px) 0 0; transition: color var(--dur-ui) var(--ease-out), background-color var(--dur-ui) var(--ease-out); }
+.file-diff > summary:hover { background: var(--surface-2); }
+.file-diff > p { margin: 6px 12px; }
+
+/* ---- Patch blocks: the artifact ---------------------------------------- */
+
+pre.diff-code,
+.card pre.diff-code {
+  margin: 0 0 2px;
+  padding: 10px 12px;
+  max-height: 480px;
+  overflow: auto;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 calc(var(--radius-sm) - 1px) calc(var(--radius-sm) - 1px);
+  background: var(--surface-code);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre;
+  overflow-wrap: normal;
+  font-feature-settings: "clig" 0, "liga" 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+pre.diff-code::-webkit-scrollbar,
+.card pre.diff-code::-webkit-scrollbar { width: 8px; height: 8px; }
+pre.diff-code::-webkit-scrollbar-thumb,
+.card pre.diff-code::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+pre.diff-code::-webkit-scrollbar-track,
+pre.diff-code::-webkit-scrollbar-corner,
+.card pre.diff-code::-webkit-scrollbar-track,
+.card pre.diff-code::-webkit-scrollbar-corner { background: transparent; }
+
+/* Lazy states (loadExpandedPatch): untouched placeholder, active load, error. */
+pre.diff-code[data-patch-url] { color: var(--muted); }
+pre.diff-code[data-patch-state="error"] {
+  color: var(--negative);
+  box-shadow: inset 2px 0 0 var(--negative);
+}
+
+/* ---- Motion (opt-in) ---------------------------------------------------- */
+
+/* Touch: both summary kinds reach the 44px floor from the foundation's coarse
+   rule; padding centers the chevron and label without touching desktop flow. */
+@media (pointer: coarse) {
+  .observed-change > summary { padding: 12px 0; }
+  .file-diff > summary { padding: 12px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .observed-change[open] > :not(summary),
+  .file-diff[open] > :not(summary) { animation: diff-reveal .3s var(--glide) both; }
+  .diff-code[data-loading]::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 8px;
+    vertical-align: -1px;
+    border: 1.5px solid var(--line-strong);
+    border-top-color: var(--muted);
+    border-radius: 50%;
+    animation: diff-spin .8s linear infinite;
+  }
+}
+@keyframes diff-reveal { from { opacity: 0; transform: translateY(-4px); } }
+@keyframes diff-spin { to { transform: rotate(360deg); } }

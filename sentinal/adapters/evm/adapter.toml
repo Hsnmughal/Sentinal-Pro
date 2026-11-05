@@ -1,0 +1,18 @@
+schema_version = "1.0"
+platform = "evm"
+source_type = "evm"
+config_key = "evm"
+label = "EVM deployments"
+url_hosts = []
+
+[polling]
+mode = "priority"
+config_is_list = true
+manual_only = true
+
+[event_kinds.PROXY_IMPLEMENTATION_CHANGED]
+score = 55
+label = "live proxy implementation changed"
+ui_group = "DEPLOYMENT"
+ui_chip = "UPGRADED"
+tags = ["implementation_upgrade"]

@@ -1,0 +1,253 @@
+/* Sentinal Pro — monitoring controls element layer (graphite.dev system).
+   Owns: .controls, .monitor-summary, #scheduler-status, .sweep, .manual-checks,
+         .poll-actions, .primary poll buttons, #action-status
+   Loads after dashboard.css (tokens + base). Consumes tokens; never redefines them.
+   Accent discipline: orange only on the primary poll action, the link affordance,
+   and focus rings. Everything else stays zinc. */
+
+.controls {
+  position: relative;
+  /* Paints above the locked workbench (sticky queue, later in DOM): the
+     refresh dropdown overlaps the queue when open, and the exit fade keeps
+     this section composited over it while it slides out. */
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.5fr) auto;
+  align-items: center;
+  gap: 20px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 26px;
+}
+
+/* Summary: heading, live scheduler status, optional detail line. */
+.monitor-summary h2 {
+  margin: 0 0 3px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: .01em;
+  color: var(--text-primary);
+}
+.monitor-summary p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.monitor-summary .scheduler-detail {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 3px;
+}
+
+/* Sweep figures: mono tabular-nums so the count columns stay scannable. */
+.sweep {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.9;
+}
+.sweep b {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.sweep .bad,
+.sweep .stale {
+  color: var(--negative);
+}
+
+/* Link affordance inside the sweep line. The extra padding + compensating
+   negative margin keeps the inline flow intact while widening the hit target. */
+.sweep .link,
+button.link {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  padding: 12px 6px;
+  margin: -12px -6px;
+  min-height: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 650;
+  font-size: 12px;
+  font-family: var(--font-sans);
+  border-radius: var(--radius-sm);
+  transition: color var(--dur-ui) var(--ease-out);
+}
+.sweep .link:hover,
+button.link:hover {
+  color: var(--accent-hover);
+  background: transparent;
+  border-color: transparent;
+}
+
+/* Disclosure trigger: quiet tonal control, borderless — tone steps carry
+   hover and open states, matching the ghost header controls. */
+.manual-checks {
+  position: relative;
+  justify-self: end;
+}
+.manual-checks > summary {
+  list-style: none;
+  user-select: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 8px 14px;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  transition: background var(--dur-ui) var(--ease-out);
+}
+.manual-checks > summary::-webkit-details-marker { display: none; }
+.manual-checks > summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--dur-ui) var(--ease-out);
+}
+.manual-checks > summary:hover {
+  background: var(--surface-3);
+}
+.manual-checks[open] > summary {
+  background: var(--surface-3);
+}
+.manual-checks[open] > summary::after { transform: rotate(-135deg) translateY(-2px); }
+
+/* Open dropdown: elevated panel, single-pixel edge, pop shadow. The panel
+   floats over sections that share the base panel tone, so it steps up to the
+   elevated surface — the tone stack (not just the border) carries the lift.
+   Entrance is transform + opacity on the strong ease-out: no overshoot, so a
+   fast reveal can't wobble at settle (the glide spring's tail reads as jitter
+   at surface speed). */
+.manual-checks[open] .poll-actions {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: min(380px, calc(100vw - 35px));
+  padding: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  transform-origin: top right;
+  animation: controls-dropdown-in var(--dur-surface) var(--ease-out);
+}
+@keyframes controls-dropdown-in {
+  from { opacity: 0; transform: translateY(-6px); }
+}
+
+/* Poll buttons: zinc surface + white/10% border; 44px targets. Disabled
+   sources keep an OPAQUE fill and dim only the label — a translucent button
+   over page content lets text bleed through and reads as a rendering glitch. */
+.poll-actions button {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+}
+.poll-actions button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text) 6%, var(--surface-3));
+  border-color: var(--border-strong);
+}
+.poll-actions button:active:not(:disabled) { transform: translateY(1px); }
+.poll-actions button:disabled {
+  opacity: 1;
+  background: var(--surface-3);
+  border-color: var(--border);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+/* Primary poll action ("Poll all"): the one orange element in this region. */
+.controls .primary,
+.detail-actions .primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  font-weight: 650;
+}
+/* Light theme: white ink on the light accent fill lands near 3.5:1, below the
+   small-text bar, so the resting fill deepens via color-mix. Hover keeps
+   --accent-hover, which passes on light surfaces. Placed before the hover
+   rules so the hover states still win the cascade. */
+[data-theme="light"] :is(.controls .primary, .detail-actions .primary, button[data-check-onchain]):not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 80%, black);
+  border-color: color-mix(in srgb, var(--accent) 80%, black);
+}
+.controls .primary:hover:not(:disabled),
+.detail-actions .primary:hover:not(:disabled),
+button[data-check-onchain]:not(:disabled):hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.controls .primary:active:not(:disabled),
+.detail-actions .primary:active:not(:disabled),
+button[data-check-onchain]:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+/* Cross-element contract: on-chain check button rendered by the dossier pane's
+   JS shares the primary treatment, and the poll buttons' 44px height. */
+button[data-check-onchain]:not(:disabled) {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  min-height: 44px;
+}
+
+/* Action feedback: success and error both carry text (never color alone). */
+#action-status {
+  margin: -12px 0 18px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--positive) 28%, transparent);
+  background: var(--positive-soft);
+  color: var(--positive);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.55;
+}
+#action-status:empty { display: none; }
+#action-status.bad {
+  border-color: color-mix(in srgb, var(--negative) 28%, transparent);
+  background: var(--negative-soft);
+  color: var(--negative);
+}
+/* Light theme: the positive token on its soft banner sits just under the 4.5:1
+   small-text bar; deepen via color-mix. The negative variant already passes. */
+[data-theme="light"] #action-status:not(.bad) { color: color-mix(in srgb, var(--positive) 85%, black); }
+[data-theme="light"] :is(.sweep .link, button.link):not(:hover) { color: color-mix(in srgb, var(--accent) 70%, black); }
+
+@media (max-width: 1250px) {
+  .controls { grid-template-columns: 1fr auto; }
+  .sweep { grid-column: 1 / -1; grid-row: 2; }
+}
+@media (max-width: 640px) {
+  .controls {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
+    margin-bottom: 20px;
+    gap: 13px;
+  }
+  .sweep { grid-row: auto; grid-column: auto; }
+  .manual-checks { justify-self: start; }
+  .manual-checks > summary { white-space: normal; }
+  .manual-checks[open] .poll-actions { right: auto; left: 0; }
+}

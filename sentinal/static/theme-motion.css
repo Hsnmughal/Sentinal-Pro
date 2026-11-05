@@ -1,0 +1,116 @@
+/* Sentinal Pro — motion element layer.
+   Owns: page-load entrance choreography, state-change reveals for the async
+   status banners, and the link hover transition. Loads last so it can
+   choreograph every element layer.
+
+   Rules of the layer (design.md): translate-up + opacity on the --glide curve
+   only; transform/opacity material only; delays are index-based with jitter,
+   never uniform; the whole entrance sequence lands under ~700ms so the
+   workbench is usable fast. Everything here is opt-in under
+   prefers-reduced-motion: no-preference — the static page is the default and
+   the foundation's reduce kill-switch is never fought.
+
+   Deliberately NOT touched (each already has motion on the tokens):
+   poll dropdown (theme-controls.css), failures drawer (theme-failures.css),
+   diff disclosures + lazy-patch spinner (theme-diff.css), health dot breathe
+   (theme-header.css). No curve among them contradicts the tokens. */
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+}
+
+@keyframes banner-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+/* --- Entrance choreography (page load) -----------------------------------
+   Three beats on the page's reading order: overview (its title, then the
+   telemetry cards), controls (summary, sweep, disclosure), then the research
+   workbench (toolbar, filters, panes). The #action-status/.drawer region is
+   hidden at load and skipped. Durations are derived from --dur-reveal
+   (calc .6s * .6 = 360ms) and delays are hand-jittered so the cascade never
+   reads mechanical; last element settles at ~660ms. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .overview-title,
+  .stats article,
+  .monitor-summary,
+  #sweep,
+  .manual-checks,
+  .toolbar,
+  .research-filters,
+  .panes {
+    /* backwards, never both: a forwards-filling transform animation keeps a
+       stacking context alive on these sections forever, which buries the
+       poll-actions dropdown (z-50) under the later-in-DOM queue sections.
+       backwards still covers the stagger delay, then the animation stops
+       applying and the contexts disappear. */
+    animation: rise-in calc(var(--dur-reveal) * .6) var(--glide) backwards;
+    /* Fallback beat for telemetry cards beyond the indexed eight. */
+    animation-delay: 240ms;
+  }
+
+  /* Beat 1 — overview */
+  .overview-title { animation-delay: 0ms; }
+  .stats article:nth-child(1) { animation-delay: 40ms; }
+  .stats article:nth-child(2) { animation-delay: 65ms; }
+  .stats article:nth-child(3) { animation-delay: 95ms; }
+  .stats article:nth-child(4) { animation-delay: 115ms; }
+  .stats article:nth-child(5) { animation-delay: 150ms; }
+  .stats article:nth-child(6) { animation-delay: 170ms; }
+  .stats article:nth-child(7) { animation-delay: 205ms; }
+  .stats article:nth-child(8) { animation-delay: 225ms; }
+
+  /* Beat 2 — controls */
+  .monitor-summary { animation-delay: 130ms; }
+  #sweep { animation-delay: 160ms; }
+  .manual-checks { animation-delay: 195ms; }
+
+  /* Beat 3 — research workbench */
+  .toolbar { animation-delay: 235ms; }
+  .research-filters { animation-delay: 265ms; }
+  .panes { animation-delay: 300ms; }
+}
+
+/* --- Lock-in exit fade ----------------------------------------------------
+   The workbench locks the viewport (sticky 100dvh queue, theme-research.css).
+   As the sections above it slide out they fade and drop pointer events, and
+   the scroll timeline runs the whole thing in reverse when scrolling back —
+   the upper section "comes in again". Scroll-driven: no JS, off the main
+   thread. Visibility flips discretely mid-range so a fully faded section can
+   no longer intercept clicks meant for the workbench below. */
+@keyframes section-exit-fade { to { opacity: 0; visibility: hidden; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .overview,
+    .controls {
+      animation: section-exit-fade linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+  }
+}
+
+/* --- State-change feedback ------------------------------------------------
+   The two async status banners pop in when JS writes text into them and
+   collapse to display:none when emptied. This gives each appearance a quiet
+   rise on --dur-ui; updates while already visible stay in place (the
+   animation only (re)starts when :empty stops matching). */
+
+#action-status:not(:empty) { animation: banner-in var(--dur-ui) var(--glide); }
+[data-program-refresh-status]:not(:empty) { animation: banner-in var(--dur-ui) var(--glide); }
+
+/* --- Hover language (gaps only) -------------------------------------------
+   Anchors elsewhere have instant hover color; the workbench reads calmer when
+   the link affordance eases on the shared ui timing. Buttons, cards, filters,
+   rows and summaries already own their transitions — untouched. */
+
+a { transition: color var(--dur-ui) var(--ease-out); }
+
+/* Press confirm for the one button-shaped control without an :active state:
+   same 1px vocabulary as the base button, instant (press must feel immediate;
+   no transition list to restate, so no coupling with theme-controls.css). */
+@media (prefers-reduced-motion: no-preference) {
+  .manual-checks > summary:active { transform: translateY(1px); }
+}

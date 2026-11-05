@@ -1,0 +1,364 @@
+/* Sentinal Pro — program research workbench element layer.
+   Owns: .queue frame, .toolbar, .research-filters, .filter-*, .search, .panes grid,
+         .leads list surface, .lead.program-card, .change-pill*, list states.
+   Loads after dashboard.css (tokens + base). Consume tokens; do not redefine them.
+   The dossier pane (.detail, .dossier-*, .card) belongs to theme-dossier.css.
+
+   Graphite spec: program cards are flat hairline rows on the sunken list surface,
+   hover lifts tone slightly, and the accent orange appears only on the selected
+   row (soft fill + inset 2px edge). Counts and times are mono; radius 8-10px;
+   feedback runs on --dur-ui with the glide curve. */
+.queue {
+  background: var(--window-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: clip;
+  /* Workbench lock: the queue is the page's terminal section, so it pins to
+     the viewport top and fills it — the document cannot scroll past it. Once
+     locked, the only scrolls are the two panes; wheeling up at a pane's top
+     edge chains back to the document and returns the sections above. */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Toolbar ------------------------------------------------------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 12px;
+}
+.toolbar h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -.03em;
+  line-height: 1.3;
+}
+.toolbar .section-desc {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.filter-footer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+/* Status line carries counts and errors: mono, tabular, secondary. */
+.filter-footer p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+/* Reset is the ghost escape hatch: quiet at rest, surfaces on hover. */
+#reset-program-filters {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+  min-height: 36px;
+}
+#reset-program-filters:hover {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* --- Filter bar ---------------------------------------------------- */
+.research-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: end;
+  padding: 10px 22px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.research-filters > .search {
+  flex: 1 1 275px;
+  min-width: 200px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  caret-color: var(--text);
+  transition: border-color var(--dur-ui) var(--ease-out), background var(--dur-ui) var(--ease-out);
+}
+.research-filters > .search:hover { border-color: var(--border-strong); }
+.search::placeholder { color: var(--subtle); opacity: 1; }
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 110px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.filter-field label { white-space: nowrap; }
+/* Custom chevron replaces the native select arrow, which Chromium draws flush
+   against the right border edge. Positioned at 12px inset so it never touches
+   the borderline; inline SVG keeps the sheet asset-free. */
+.filter-field select {
+  width: 100%;
+  max-width: 170px;
+  min-height: 44px;
+  padding: 8px 34px 8px 12px;
+  appearance: none;
+  /* base-select lays the closed control out as a flex box but leaves it at
+     align-items: normal (stretch), so the value text rides the top edge while
+     the filter toggles center theirs. Center it to share one optical middle. */
+  align-items: center;
+  background-color: var(--surface-sunken);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a1a1a6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  transition: border-color var(--dur-ui) var(--ease-out), background-color var(--dur-ui) var(--ease-out);
+}
+[data-theme="light"] .filter-field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2355555c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.filter-field select:hover { border-color: var(--border-strong); }
+
+/* Themed option list: appearance: base-select (Chromium 135+) renders the
+   open dropdown as a styleable in-page popover instead of the OS-native menu;
+   browsers without support ignore it and keep the native popup. The select
+   stays a real <select>, so filter JS and keyboard semantics are untouched.
+   Panel vocabulary matches the poll dropdown: elevated surface, strong edge,
+   pop shadow. */
+.filter-field select,
+.filter-field select::picker(select) {
+  appearance: base-select;
+}
+/* base-select draws its own solid picker icon; the sheet already provides a
+   themed, inset chevron — drop the duplicate. */
+.filter-field select::picker-icon {
+  display: none;
+}
+.filter-field select::picker(select) {
+  /* Always open BELOW the trigger: the UA's auto-flip turns tall pickers
+     upside-down over the content the user is reading. The height cap keeps a
+     downward picker reachable on short viewports via scroll. */
+  position-area: block-end span-inline-end;
+  position-try-fallbacks: none;
+  margin-top: 6px;
+  max-height: min(300px, 60vh);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  padding: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  color: var(--text);
+}
+.filter-field select option {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  transition: background var(--dur-ui) var(--ease-out);
+}
+.filter-field select option:hover,
+.filter-field select option:focus {
+  background: var(--surface-3);
+}
+.filter-field select option:checked {
+  background: var(--accent-soft);
+  box-shadow: inset 2px 0 0 var(--accent);
+  font-weight: 600;
+}
+
+.filter-toggle {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+  border-radius: var(--radius);
+  color: var(--muted);
+  padding: 9px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  user-select: none;
+  transition: border-color var(--dur-ui) var(--ease-out), background var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out);
+}
+.filter-toggle:hover { border-color: var(--border-strong); color: var(--text); }
+/* Checked = elevated tone, not accent: orange stays reserved for selection. */
+.filter-toggle:has(input:checked) {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.filter-toggle input {
+  accent-color: var(--text);
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+
+/* --- Master/detail workspace --------------------------------------- */
+/* Fills the locked workbench below toolbar + filters; minmax(0, 1fr) pins
+   the row to the available height so each pane scrolls inside itself. */
+.panes {
+  display: grid;
+  grid-template-columns: minmax(310px, 31%) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+/* List side: the sunken surface rows sit on. Fills the locked workbench and
+   scrolls internally; at its top edge the wheel chains back to the document
+   and the sections above return — no overscroll containment here, containment
+   would turn the lock into a trap. */
+.leads {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px;
+  border-right: 1px solid var(--line);
+  background: var(--surface-sunken);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* --- Program cards: flat rows -------------------------------------- */
+.lead.program-card {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 44px;
+  display: block;
+  text-align: left;
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+  transition: background var(--dur-ui) var(--ease-out), border-color var(--dur-ui) var(--ease-out), box-shadow var(--dur-ui) var(--ease-out);
+}
+.lead.program-card:hover {
+  background: color-mix(in srgb, var(--text) 4%, var(--surface-sunken));
+  border-color: var(--border-strong);
+}
+/* Selected row carries the only accent in this element. */
+.lead.program-card.selected,
+.lead.program-card[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--border-strong);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.lead.program-card.selected:hover,
+.lead.program-card[aria-pressed="true"]:hover {
+  background: var(--accent-soft);
+}
+/* Secondary text needs the stronger step on the warm selected fill. */
+.lead.program-card.selected :is(time, .lead-stack, .change-pill),
+.lead.program-card[aria-pressed="true"] :is(time, .lead-stack, .change-pill) {
+  color: var(--muted);
+}
+
+.lead-body, .lead-top { min-width: 0; }
+.lead-top {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.lead-top h3 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.45;
+  letter-spacing: -.01em;
+}
+.lead-top time { flex: 0 0 auto; font-size: 11px; color: var(--subtle); }
+.program-card p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+/* Reward line: mono via base layer, quiet — never accented. */
+.program-card .lead-meta { color: var(--muted); font-size: 11px; }
+.program-card .lead-stack { font-size: 11px; color: var(--subtle); }
+
+/* Change counts: quiet mono chips; zero reads hollow, never alarming. */
+.change-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 9px;
+}
+.change-pill {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+  padding: 2px 7px;
+}
+.change-pill.pill-zero { background: transparent; color: var(--subtle); }
+
+/* --- List states: loading, filtered-empty, error-with-retry --------- */
+.leads .load-state {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  margin: 4px;
+}
+.leads .load-state p { margin: 0; }
+
+/* --- Responsive ----------------------------------------------------- */
+@media (max-width: 1250px) {
+  .research-filters > .search { flex-basis: 100%; }
+}
+@media (max-width: 980px) {
+  /* Two-screen page flow: no lock, panes grow with their content. */
+  .queue { position: static; height: auto; display: block; }
+  .panes { display: block; min-height: 380px; }
+  .leads { border-right: 0; overflow: visible; }
+}
+@media (max-width: 640px) {
+  .toolbar { padding: 18px 14px 8px; flex-wrap: wrap; }
+  .toolbar h2 { font-size: 18px; }
+  .research-filters { padding: 10px 12px 16px; gap: 8px; }
+  .research-filters > .search { flex-basis: 100%; }
+  .filter-field { flex: 1 1 125px; }
+  .filter-field select { max-width: unset; }
+  .filter-toggle { flex: 1 1 130px; }
+  .leads { padding: 8px; gap: 7px; }
+  .lead.program-card { padding: 13px 12px; }
+  /* Keep native zoom away from small screens' form fields. */
+  .research-filters > .search,
+  .filter-field select { font-size: 16px; }
+}

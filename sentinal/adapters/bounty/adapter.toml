@@ -1,0 +1,12 @@
+schema_version = "1.0"
+platform = "bounty"
+source_type = "bounty"
+config_key = "bounty"
+label = "Bounty policies"
+url_hosts = []
+policy_payload = true
+shared_kinds = ["bounty_policy"]
+
+[polling]
+mode = "fixed"
+fixed_interval_seconds = 3600

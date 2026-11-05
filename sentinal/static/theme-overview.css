@@ -1,0 +1,104 @@
+/* Sentinal Pro — overview element layer.
+   Owns: .overview, .overview-title, .eyebrow, .stats, [data-stat] articles
+   Loads after dashboard.css (tokens + base). Consume tokens; do not redefine them.
+
+   Graphite.dev spec: hierarchy through scale + weight contrast (no all-caps
+   transforms), mono only for data, orange accent on at most one stat, flat
+   zinc cards with 1px white/10% edges and no stacked shadows. */
+main { min-width: 0; }
+
+.overview {
+  display: flex;
+  gap: 36px;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 36px 0 24px;
+}
+
+.overview-title { min-width: 0; max-width: 480px; }
+
+/* Small mono label, no text-transform (spec forbids casing transforms). */
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+
+/* Headline dominates: 36px-class, weight 500 — confidence without shouting. */
+.overview-title h2 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+
+.overview-title > p:last-child {
+  margin: 12px 0 0;
+  color: var(--muted);
+  max-width: 46ch;
+  font-size: 15px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.stats {
+  flex: 1;
+  max-width: 910px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+  gap: 12px;
+}
+
+/* Flat card: tone carries elevation, one 1px edge, radius 8px, no shadow. */
+.stats article {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 6px;
+  min-width: 0;
+  transition: background var(--dur-ui) var(--ease-out), border-color var(--dur-ui) var(--ease-out);
+}
+.stats article:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+/* Labels stay sentence case, secondary; values are mono/tabular via base layer. */
+.stats article span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.stats article strong {
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Orange on exactly one live telemetry value; the rest stay neutral. */
+.stats article[data-stat="code"] strong { color: var(--accent); }
+
+@media (max-width: 1250px) {
+  .overview { display: block; }
+  .overview-title { max-width: 800px; margin-bottom: 20px; }
+  .stats { max-width: unset; }
+}
+@media (max-width: 640px) {
+  .overview { padding: 28px 0 20px; }
+  .overview-title h2 { font-size: 27px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .stats article { padding: 12px; }
+  .stats article strong { font-size: 21px; }
+  .stats article span { font-size: 11px; }
+}

@@ -1,0 +1,11 @@
+include LICENSE README.md CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md config.example.toml .env.example
+include run-local.ps1 run-local.sh
+recursive-include sentinal *.py *.toml *.md *.css *.js
+recursive-include docs *.md *.png
+exclude docs/launch-kit.md
+recursive-include scripts *.py
+prune .runtime
+prune .commandcode
+prune platforms
+exclude config.toml .env
+global-exclude *.db* *.sqlite* *.py[cod]

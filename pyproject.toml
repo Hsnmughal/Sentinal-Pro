@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentinal-pro"
+version = "0.1.5"
+description = "Local-first monitoring for program changes and repository file diffs."
+requires-python = ">=3.11"
+readme = "README.md"
+license = "PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE"]
+authors = [{name = "hsnmughal"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["build"]
+
+[project.scripts]
+sentinal = "sentinal.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["sentinal*"]
+
+[tool.setuptools.package-data]
+"sentinal" = ["static/*", "defaults/*.toml"]
+"*" = ["adapter.toml", "README.md"]
+"sentinal.adapters" = ["*/*.toml", "*/README.md"]

@@ -1,0 +1,141 @@
+/* Sentinal Pro — failures drawer element layer.
+   Owns: .drawer, .failure* rows, technical details, .retry
+   Loads after dashboard.css (tokens + base). Consume tokens; do not redefine them.
+
+   Alarm is restrained: one calm --surface-1 panel whose only alarm voice is a
+   single left rail — --negative while error rows exist, --caution when the
+   drawer holds only waiting/recovered checks. Rows stay hairline-separated
+   neutral; text carries all meaning, color never works alone. */
+.drawer {
+  display: none;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: inset 3px 0 0 var(--negative);
+  padding: 0 16px 12px;
+  margin: -12px 0 22px;
+  max-height: 70vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+.drawer:not(:has(.err)) { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--caution) 72%, transparent); }
+/* Strong ease-out, not the glide spring: the spring's decaying oscillation
+   tail reads as end-of-animation jitter on a surface that also pushes the
+   page layout down. */
+.drawer.open { display: block; animation: drawer-reveal var(--dur-surface) var(--ease-out); }
+@keyframes drawer-reveal { from { opacity: 0; transform: translateY(-10px); } }
+
+/* Quiet mono section labels — the literal JS strings stay, the shouting goes. */
+.drawer h3 {
+  margin: 0;
+  padding: 14px 2px 9px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: var(--subtle);
+}
+
+/* Rows: hairline-separated lanes, one tone-step hover, baseline flow. */
+.failure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+  align-items: baseline;
+  padding: 11px 12px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-ui) var(--ease-out);
+}
+.failure + .failure { border-top: 1px solid var(--line); }
+.failure:hover { background: color-mix(in srgb, var(--surface-3) 40%, transparent); }
+.failure b {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.failure .err {
+  flex: 1 1 300px;
+  color: var(--negative);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.failure .retry { color: var(--muted); }
+
+/* Technical details: native disclosure, quiet summary, contained code block. */
+.failure details { flex-basis: 100%; }
+.failure summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 3px 0 0 -10px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  list-style: none;
+  user-select: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--subtle);
+  transition: color var(--dur-ui) var(--ease-out);
+}
+.failure summary::-webkit-details-marker { display: none; }
+.failure summary::before {
+  content: "▸";
+  font-size: 9px;
+  transition: transform var(--dur-ui) var(--ease-out);
+}
+.failure summary:hover,
+.failure details[open] summary { color: var(--muted); }
+.failure details[open] summary::before { transform: rotate(90deg); }
+.failure pre {
+  margin: 7px 0 2px;
+  padding: 10px 12px;
+  background: var(--surface-code);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 240px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+/* Retry: compact ghost — recovery is not a primary action, so no orange.
+   Hover slides to the negative voice; disabled (Queued) goes fully quiet. */
+.failure button {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  min-height: 32px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.failure button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--negative) 55%, transparent);
+  background: var(--negative-soft);
+  color: var(--negative);
+}
+.failure button:disabled { border-color: var(--line); color: var(--subtle); }
+
+/* Touch: physical targets for the summary disclosure and retry control; the
+   foundation's coarse floor lifts summaries, this sheet lifts its own button. */
+@media (pointer: coarse) {
+  .failure summary { padding: 9px 12px 9px 10px; }
+  .failure button { min-height: 44px; }
+}
+
+@media (max-width: 640px) {
+  .drawer { padding: 0 10px 10px; margin: -10px 0 18px; }
+  .failure { gap: 6px 10px; padding: 10px 8px; }
+}

@@ -1,0 +1,18 @@
+schema_version = "1.0"
+platform = "immunefi"
+source_type = "immunefi"
+config_key = "immunefi"
+label = "Immunefi programs"
+url_hosts = ["immunefi.com"]
+policy_payload = true
+catalog_source = true
+shared_kinds = ["bounty_policy", "program_lifecycle"]
+
+[polling]
+mode = "fixed"
+fixed_interval_seconds = 14400
+
+[global_job]
+key = "catalog"
+label = "Sync Immunefi"
+interval_seconds = 3600

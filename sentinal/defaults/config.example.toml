@@ -1,0 +1,64 @@
+database = "sentinal.db"
+
+[server]
+host = "127.0.0.1"
+port = 8080
+
+[polling]
+correlation_window_hours = 168
+# Paused programs keep reduced-frequency resumption checks (factor x base interval).
+paused_interval_factor = 4
+# Release boundary checks run at a slower cadence than code polls.
+release_interval_factor = 6
+
+# Shared request budgets by origin/credential: spacing with jitter, a sliding
+# window cap, bounded concurrency, and persisted cooldowns (Retry-After and
+# rate-limit resets). Manual refreshes obey the same budgets.
+[polling.http]
+min_spacing_seconds = 0.25
+jitter_seconds = 0.25
+max_requests = 120
+window_seconds = 60
+max_concurrent = 4
+request_timeout_seconds = 15
+# Hard cap for each remote response (16 MiB by default; allowed 64 KiB to 64 MiB).
+max_response_bytes = 16777216
+
+# Per-host limits override the shared defaults. Manual checks obey these too.
+[polling.http.sources."api.github.com"]
+max_requests = 120
+window_seconds = 60
+max_concurrent = 3
+
+[polling.http.sources."immunefi.com"]
+min_spacing_seconds = 3
+jitter_seconds = 1
+max_requests = 15
+window_seconds = 60
+max_concurrent = 1
+backoff_base_seconds = 60
+backoff_max_seconds = 3600
+
+[scheduler]
+tick_seconds = 60
+batch_size = 12
+max_workers = 3
+max_retry_seconds = 900
+
+[scheduler.priority_intervals]
+high = 600
+normal = 1800
+dormant = 10800
+
+# Generated local watchlist exports. This directory is ignored by Git.
+[export]
+directory = "platforms"
+
+[global_jobs.catalog]
+enabled = true
+url = "https://immunefi.com/bug-bounty/"
+interval_seconds = 3600
+
+# The catalogue discovers current public programs and their repository targets.
+# No placeholder repositories, bounty URLs, or EVM addresses are enabled.
+# Add explicit repository targets as described in docs/configuration.md.

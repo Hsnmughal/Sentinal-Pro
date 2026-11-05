@@ -1,0 +1,247 @@
+/* Sentinal Pro / Workbench UI — foundation layer.
+   Design system: graphite.dev spec (design.md) — near-black zinc surfaces,
+   warm near-white text, orange accent, glide motion. No framework, remote fonts or images.
+
+   File map (cascade order, later files override):
+     dashboard.css      tokens + reset/base + shared primitives + structural invariants
+     theme-header.css   app frame, header, brand, health pill, theme toggle
+     theme-overview.css overview hero + stats cards
+     theme-controls.css monitoring activity, refresh toolbar, action status
+     theme-failures.css failures drawer
+     theme-research.css research toolbar, filters, program list
+     theme-dossier.css  dossier pane, evidence cards, empty state
+     theme-diff.css     change/diff disclosures and patch blocks
+     theme-motion.css   entrance reveals, stagger, choreography
+
+   Element layers must consume these tokens and never redefine them. */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  /* Surfaces: four-step zinc elevation stack. */
+  --bg: #0a0a0a;
+  --window-bg: #111113;
+  --panel: #18181b;
+  --panel-elevated: #27272a;
+  --panel-hover: #2e2e33;
+  --input-bg: #131316;
+  --code-bg: #121215;
+  /* Edges: white at 10% opacity, per spec. */
+  --line: rgba(255, 255, 255, .10);
+  --line-strong: rgba(255, 255, 255, .17);
+  /* Text: warm near-white, never pure white for copy. */
+  --text: #e8e8ed;
+  --muted: #a1a1a6;
+  --subtle: #87878e;
+  /* Accent: brand orange, used sparingly. */
+  --mint: #ff8833;
+  --mint-hover: #ffa25e;
+  --mint-soft: rgba(255, 136, 51, .12);
+  /* Semantic states. */
+  --emerald: #a0e3a6;
+  --emerald-soft: rgba(160, 227, 166, .10);
+  --amber: #fac862;
+  --amber-soft: rgba(250, 200, 98, .10);
+  --red: #ffa6b2;
+  --red-soft: rgba(255, 166, 178, .10);
+  --on-primary: #201001;
+  /* Depth: single-pixel lift only; surfaces carry elevation through tone. */
+  --shadow: 0 1px 3px rgba(0, 0, 0, .25), 0 1px 2px -1px rgba(0, 0, 0, .2);
+  --shadow-pop: 0 4px 24px rgba(0, 0, 0, .45), 0 1px 3px rgba(0, 0, 0, .3);
+  --ring: #ff8833;
+  --radius: 10px;
+  --radius-sm: 8px;
+
+  /* Motion contract: spring-like glide without a spring library (design.md).
+     reveal = load choreography only; surface = floating panels (dropdown,
+     drawer); ui = in-page feedback (hover, press, banners). */
+  --glide: linear(0, 0.006 0.8%, 0.026 1.8%, 0.062 3%, 0.112 4.4%, 0.178 5.9%, 0.262 7.6%, 0.366 9.5%, 0.492 11.6%, 0.642 13.9%, 0.818 16.5%, 1.018 19.5%, 1.218 23%, 1.382 27.1%, 1.49 31.6%, 1.533 36%, 1.52 39.9%, 1.462 44.5%, 1.365 50.1%, 1.214 57.5%, 1.039 66.5%, 0.905 75.6%, 0.845 82.6%, 0.855 88.4%, 0.917 94.1%, 0.99 98.6%, 1);
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --dur-reveal: .6s;
+  --dur-surface: .22s;
+  --dur-ui: .18s;
+  --dur-exit: .12s;
+
+  /* Type: Matter with graceful fallbacks; mono reserved for code and data. */
+  --font-sans: "Matter", "DM Sans", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f4f3;
+  --window-bg: #fafafa;
+  --panel: #ffffff;
+  --panel-elevated: #f0f0ee;
+  --panel-hover: #e8e8e6;
+  --input-bg: #ffffff;
+  --code-bg: #f2f2f0;
+  --line: rgba(9, 9, 11, .10);
+  --line-strong: rgba(9, 9, 11, .18);
+  --text: #1c1c1f;
+  --muted: #55555c;
+  --subtle: #6e6e76;
+  --mint: #d96a17;
+  --mint-hover: #b85510;
+  --mint-soft: rgba(217, 106, 23, .10);
+  --emerald: #1b7a44;
+  --emerald-soft: rgba(27, 122, 68, .09);
+  --amber: #8f5f0a;
+  --amber-soft: rgba(143, 95, 10, .09);
+  --red: #b33047;
+  --red-soft: rgba(179, 48, 71, .08);
+  --on-primary: #ffffff;
+  --shadow: 0 1px 3px rgba(9, 9, 11, .08), 0 1px 2px -1px rgba(9, 9, 11, .06);
+  --shadow-pop: 0 4px 24px rgba(9, 9, 11, .14), 0 1px 3px rgba(9, 9, 11, .08);
+  --ring: #d96a17;
+}
+/* Semantic aliases — element layers should prefer these names. */
+:root {
+  --accent: var(--mint);
+  --accent-hover: var(--mint-hover);
+  --accent-soft: var(--mint-soft);
+  --accent-ink: var(--on-primary);
+  --surface-page: var(--bg);
+  --surface-sunken: var(--input-bg);
+  --surface-1: var(--panel);
+  --surface-2: var(--panel-elevated);
+  --surface-3: var(--panel-hover);
+  --surface-code: var(--code-bg);
+  --border: var(--line);
+  --border-strong: var(--line-strong);
+  --text-primary: var(--text);
+  --text-secondary: var(--muted);
+  --text-tertiary: var(--subtle);
+  --positive: var(--emerald);
+  --positive-soft: var(--emerald-soft);
+  --caution: var(--amber);
+  --caution-soft: var(--amber-soft);
+  --negative: var(--red);
+  --negative-soft: var(--red-soft);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.6 var(--font-sans);
+  /* Developer-tool readability: no ligatures (design.md). */
+  font-feature-settings: "clig" 0, "liga" 0;
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+code, pre, time, [data-stat] strong, .lead-meta, .eyebrow {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+button, input, select, textarea { font: inherit; }
+button, summary, select { touch-action: manipulation; }
+a { color: var(--accent); text-underline-offset: 3px; overflow-wrap: anywhere; }
+a:hover { color: var(--accent-hover); }
+button {
+  cursor: pointer;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+  min-height: 36px;
+  padding: 7px 12px;
+  font-weight: 500;
+  font-size: 12px;
+  transition: border-color var(--dur-ui) var(--ease-out), background var(--dur-ui) var(--ease-out), transform var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out);
+}
+button:hover { border-color: color-mix(in srgb, var(--text) 24%, transparent); background: var(--surface-3); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+/* Touch floor: coarse pointers get the 44px target on every button and
+   disclosure; fine pointers keep the compact visual sizes. */
+@media (pointer: coarse) {
+  button, summary { min-height: 44px; }
+}
+:where(button, input, select, summary, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+/* Form fields: focus reads as a bright neutral edge, not a floating outline.
+   Chromium matches :focus-visible on <select> even for plain mouse clicks, so
+   an offset accent outline shows on every filter interaction and reads as a
+   broken border. The edge change below keeps keyboard focus clearly visible
+   (it wins over element-sheet border shorthands by specificity) without
+   spending the accent on every field. */
+select:focus-visible,
+input:not([type="checkbox"]):not([type="radio"]):focus-visible {
+  outline: none;
+  border-color: var(--text);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 30%, transparent);
+}
+::selection { background: var(--accent-soft); color: var(--text); }
+code { color: var(--accent); background: var(--accent-soft); padding: 2px 5px; border-radius: 4px; font-size: .9em; }
+/* Light theme: the accent token clears 3:1 but not the 4.5:1 small-text bar on
+   light surfaces, so link and inline-code text deepen via color-mix (tokens
+   untouched); rings, fills and large display text keep --accent. */
+[data-theme="light"] :is(a, code) { color: color-mix(in srgb, var(--accent) 70%, black); }
+[data-theme="light"] a:hover { color: color-mix(in srgb, var(--accent-hover) 80%, black); }
+.muted { color: var(--muted); }
+.bad { color: var(--red); }
+
+/* Shared primitive: async load / error state used by list and dossier panes. */
+.load-state { padding: 22px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); color: var(--muted); }
+/* Failed-load alert: the app's alarm voice matches the failures drawer —
+   solid surface, one negative rail — and the retry control borrows the
+   drawer's ghost button so recovery looks identical everywhere. Non-alert
+   load states (loading, filtered-empty) stay quiet dashed. */
+.load-state[role="alert"] {
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  box-shadow: inset 3px 0 0 var(--negative);
+  color: var(--text-secondary);
+}
+.load-state[role="alert"] > p { margin: 0; overflow-wrap: anywhere; }
+.load-state[role="alert"] button {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  min-height: 32px;
+  padding: 4px 12px;
+  font-size: 12px;
+  justify-self: start;
+}
+.load-state[role="alert"] button:hover {
+  border-color: color-mix(in srgb, var(--negative) 55%, transparent);
+  background: var(--negative-soft);
+  color: var(--negative);
+}
+.load-state[role="alert"] button:disabled { border-color: var(--line); color: var(--subtle); }
+
+/* Structural invariants: the master/detail two-screen flow below 980px.
+   These selectors are part of the UI contract (tests + research.js rely on them). */
+@media (max-width: 980px) {
+  .panes[data-mobile-view="list"] .detail { display: none; }
+  .panes[data-mobile-view="detail"] .leads { display: none; }
+}
+@media (max-width: 640px) {
+  body { font-size: 13px; }
+}
+/* Theme crossfade, all engines: applyTheme() prefers a view transition — the
+   old page cross-fades into the new one as a single composited snapshot
+   (Chrome, Brave, Edge, Safari 18+, Firefox 141+), so every element moves in
+   sync and text never steps through muddy intermediate colors. Browsers
+   without the API (older Firefox/Safari) get the .theme-switching fallback
+   below: one shared, colors-only fade. The JS skips all animation on first
+   paint and under prefers-reduced-motion. Short duration: a theme flip is a
+   decision, not a journey. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 150ms;
+  animation-timing-function: ease-out;
+}
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease, box-shadow 140ms ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

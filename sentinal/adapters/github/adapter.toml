@@ -1,0 +1,31 @@
+schema_version = "1.0"
+platform = "github"
+source_type = "github"
+config_key = "github"
+label = "GitHub repositories"
+url_hosts = ["github.com", "api.github.com"]
+
+[polling]
+mode = "priority"
+release_checks = true
+
+[event_kinds.GITHUB_HEAD_CHANGED]
+score = 20
+label = "tracked repository head changed"
+ui_group = "CODE CHANGE"
+ui_chip = "UPDATED"
+tags = ["repository_activity"]
+
+[event_kinds.GITHUB_RELEASE_CHANGED]
+score = 30
+label = "tracked release boundary changed"
+ui_group = "CODE CHANGE"
+ui_chip = "RELEASE"
+tags = ["repository_activity"]
+
+[event_kinds.GITHUB_PRODUCTION_DIFF_CHANGED]
+score = 35
+label = "unreleased production-to-main diff changed"
+ui_group = "CODE CHANGE"
+ui_chip = "UNRELEASED"
+tags = ["repository_activity"]

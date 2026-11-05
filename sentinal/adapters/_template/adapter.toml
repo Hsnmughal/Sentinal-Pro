@@ -1,0 +1,40 @@
+schema_version = "1.0"
+platform = "myplatform"
+source_type = "myplatform"
+config_key = "myplatform"
+label = "My Platform"
+url_hosts = ["myplatform.test"]
+
+# Set to true when this source stores a normalised bounty policy, so the dashboard can
+# show reward ceilings, tiers and scope for its events.
+policy_payload = false
+
+# Set to true when this adapter publishes a catalogue of programs.
+catalog_source = false
+
+# Shared event-kind groups from sentinal/core/kinds.py, pulled in rather than forked.
+# Available: "bounty_policy", "program_lifecycle"
+shared_kinds = ["bounty_policy"]
+
+[polling]
+# "priority" follows scheduler.priority_intervals; "fixed" uses fixed_interval_seconds.
+mode = "fixed"
+fixed_interval_seconds = 3600
+# Set true when the per-protocol config block is a list of targets rather than one object.
+config_is_list = false
+
+# Optional platform-wide job (for example a catalogue sync). If present, adapter.py must
+# define poll_global(context). The key becomes the job's source_type and must be unique.
+[global_job]
+key = "myplatform_catalog"
+label = "Sync My Platform"
+interval_seconds = 3600
+
+# Event kinds this platform emits that are not already covered by shared_kinds.
+# tags must come from sentinal.core.contract.TAGS — that is how correlation finds them.
+[event_kinds.MYPLATFORM_THING_CHANGED]
+score = 25
+label = "thing changed"
+ui_group = "PROGRAM STATUS"
+ui_chip = "CHANGED"
+tags = ["policy"]

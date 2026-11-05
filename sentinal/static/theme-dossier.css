@@ -1,0 +1,277 @@
+/* Sentinal Pro — program dossier element layer (graphite restyle).
+   Owns: .detail pane, .dossier-intro, .dossier-kicker, .dossier-back, .dossier-tabs,
+         .empty-dossier, .card, .big reward figure, [data-program-refresh-status]
+   Loads after dashboard.css (tokens + base). Consume tokens; do not redefine them.
+   Context only, not owned here: button[data-check-onchain] (theme-controls.css),
+   .observed-change/.file-diff inner content (theme-diff.css), .load-state
+   primitive (dashboard.css), entrance reveals (theme-motion.css). */
+
+/* --- Reading surface ---------------------------------------------------- */
+/* Right pane of the locked workbench (theme-research.css): fills the viewport
+   below the filters and scrolls its own evidence. At its top edge the wheel
+   chains back to the document, so the sections above return — the pane never
+   traps the scroll. */
+.detail {
+  min-width: 0;
+  min-height: 0;
+  padding: 32px clamp(20px, 3vw, 40px) 40px;
+  background: var(--surface-1);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+/* The pane takes programmatic focus on every selection (tabindex="-1",
+   focusPanel in research.js) purely to move the reading position — it is not
+   in the tab order and nothing inside depends on the pane's own focus ring,
+   so no outline here. Keyboard users reach every control inside via Tab and
+   get the global :focus-visible ring on those controls instead. */
+.detail:focus {
+  outline: none;
+}
+.detail > p {
+  margin: 8px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* --- Intro block --------------------------------------------------------- */
+.dossier-intro {
+  padding: 0 0 24px;
+  border-bottom: 1px solid var(--border);
+  margin: 0 0 36px;
+}
+.dossier-intro .dossier-kicker {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  color: var(--text-tertiary);
+}
+.dossier-intro > p {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.dossier-intro > p.muted {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.detail h2 {
+  margin: 0 0 8px;
+  font-size: clamp(24px, 2.2vw, 28px);
+  font-weight: 600;
+  letter-spacing: -.02em;
+  line-height: 1.25;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+/* --- Async states -------------------------------------------------------- */
+/* Loading placeholder: the direct-child status paragraph (not the refresh
+   status). It is the pane's only content while loading, so it centers in the
+   pane; mono status text and the same ring recipe as the lazy-patch spinner
+   (theme-diff.css) keep one loader vocabulary. A fast-spinning ring reads as
+   faster progress; static ring under reduced motion. */
+.detail > p.muted[role="status"]:not([data-program-refresh-status]) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 100%;
+  margin: 0;
+  padding: 24px 0;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.detail > p.muted[role="status"]:not([data-program-refresh-status])::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--line-strong);
+  border-top-color: var(--muted);
+  border-radius: 50%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .detail > p.muted[role="status"]:not([data-program-refresh-status])::before {
+    animation: loader-spin .8s linear infinite;
+  }
+}
+@keyframes loader-spin { to { transform: rotate(360deg); } }
+/* Refresh status: hidden while empty, quiet caution banner when it has news. */
+[data-program-refresh-status] {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--caution);
+  background: var(--caution-soft);
+  border: 1px solid color-mix(in srgb, var(--caution) 30%, transparent);
+  border-radius: var(--radius-sm);
+}
+[data-program-refresh-status]:empty { display: none; }
+/* Error state reuses the shared .load-state primitive; context spacing only. */
+.detail .load-state { margin: 16px 0; }
+
+/* --- Evidence cards ------------------------------------------------------- */
+.card {
+  margin: 16px 0 0;
+  padding: 20px 24px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.card h3 {
+  margin: 0 0 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  /* Secondary step: the tertiary token sits under 4.5:1 on the elevated card fill. */
+  color: var(--text-secondary);
+}
+.card h4 {
+  margin: 20px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--text-secondary);
+}
+.card p { margin: 8px 0; }
+.card .big {
+  margin: 4px 0 12px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  line-height: 1.3;
+  color: var(--positive);
+}
+.card pre {
+  margin: 10px 0;
+  padding: 12px 14px;
+  max-height: 320px;
+  overflow: auto;
+  background: var(--surface-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  white-space: pre-wrap;
+  font-size: 12px;
+}
+.card ul {
+  padding-left: 18px;
+  margin: 8px 0;
+  line-height: 1.7;
+}
+.card li {
+  margin: 0 0 6px;
+  overflow-wrap: anywhere;
+}
+.card li::marker { color: var(--text-tertiary); }
+
+/* Disclosures owned by this pane (impacts, scoped addresses). The diff layer
+   owns .observed-change summaries; this rule excludes them. */
+.detail details:not(.observed-change) > summary {
+  cursor: pointer;
+  padding: 6px 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  transition: color var(--dur-ui) var(--ease-out);
+}
+.detail details:not(.observed-change) > summary:hover { color: var(--text-primary); }
+.detail details:not(.observed-change)[open] > summary { margin-bottom: 8px; }
+/* Spacing context around the on-chain action button; its look lives in theme-controls.css. */
+.detail [data-check-onchain] { margin: 6px 0 4px; }
+
+/* --- Tabs (reserved structure) ------------------------------------------- */
+.dossier-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 20px 0;
+}
+.dossier-tab {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+}
+.dossier-tab:hover { background: var(--surface-2); color: var(--text-primary); }
+.dossier-tab[aria-selected="true"] {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+/* --- Empty state ----------------------------------------------------------- */
+.empty-dossier {
+  min-height: 340px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--text-secondary);
+}
+.empty-dossier::before {
+  content: "⌕";
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text-tertiary);
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+.empty-dossier p {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.empty-dossier span {
+  max-width: 392px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+
+/* --- Back button (mobile master/detail flow) ------------------------------- */
+.dossier-back { display: none; margin: 0 0 24px; }
+
+/* --- Responsive: two-screen flow below 980px (UI contract) ----------------- */
+/* Touch: the in-card disclosures grow into 44px targets with the summary
+   text centered (padding keeps the native marker and text alignment). */
+@media (pointer: coarse) {
+  .detail details:not(.observed-change) > summary { padding: 12px 0; }
+}
+@media (max-width: 980px) {
+  .detail {
+    min-height: 410px;
+    overflow: visible;
+    border-top: 1px solid var(--border);
+  }
+  .panes[data-mobile-view="detail"] .detail { border-top: 0; }
+  .dossier-back { display: inline-flex; }
+}
+@media (max-width: 640px) {
+  .detail { padding: 20px 16px 28px; }
+  .dossier-intro { padding-bottom: 20px; margin-bottom: 24px; }
+  .card { padding: 16px; }
+  .card .big { font-size: 22px; }
+}
